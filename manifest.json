@@ -1,0 +1,20 @@
+{
+  "name": "El Impostor",
+  "short_name": "el_impostor",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196f3",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-500x500.png",
+      "sizes": "500x500",
+      "type": "image/png"
+    }
+  ]
+}

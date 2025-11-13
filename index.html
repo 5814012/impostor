@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="_.css">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2196f3" />
+  <title>El Impostor</title>
+</head>
+<body>
+  <main>
+    <h1>El Impostor</h1>
+
+    <!-- Configuración -->
+    <section id="configuracion">
+      <h2>Que tema quieres jugar?</h2>
+
+      <div id="temas-container">
+        <div class="tema-card" data-tema="objetos">Objetos</div>
+        <div class="tema-card" data-tema="animales">Animales</div>
+        <div class="tema-card" data-tema="personajes">Personajes</div>
+        <div class="tema-card" data-tema="peliculas">Películas</div>
+        <div class="tema-card" data-tema="comida">Comida</div>
+        <div class="tema-card" data-tema="bebidas">Bebidas</div>
+      </div>
+
+      <div class="input-group">
+        <label for="jugadores">Jugadores</label>
+        <div class="input-step">
+          <input type="number" id="jugadores" min="3" max="10" value="4">
+          <button class="btn-step" data-action="increase" data-target="jugadores">▴</button>
+          <button class="btn-step" data-action="decrease" data-target="jugadores">▾</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="impostores">Impostores</label>
+        <div class="input-step">
+          <input type="number" id="impostores" min="1" max="4" value="1">
+          <button class="btn-step" data-action="increase" data-target="impostores">▴</button>
+          <button class="btn-step" data-action="decrease" data-target="impostores">▾</button>
+        </div>
+      </div>
+
+      <button id="iniciar">Iniciar partida</button>
+    </section>
+
+    <!-- Juego -->
+    <section id="juego" class="oculto">
+      <h2 id="tema-actual"></h2>
+      <div id="cartas-container"></div>
+      <button id="reiniciar">Terminar</button>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script>
+  // --- Variables y estado ---
+  const temasCards = document.querySelectorAll(".tema-card");
+  const jugadoresInput = document.getElementById("jugadores");
+  const impostoresInput = document.getElementById("impostores");
+  const iniciarBtn = document.getElementById("iniciar");
+  const reiniciarBtn = document.getElementById("reiniciar");
+  const configuracion = document.getElementById("configuracion");
+  const juego = document.getElementById("juego");
+  const cartasContainer = document.getElementById("cartas-container");
+  const temaActualH2 = document.getElementById("tema-actual");
+
+  let temaSeleccionado = localStorage.getItem("tema") || "";
+  let estado = {
+    tema: temaSeleccionado,
+    jugadores: parseInt(localStorage.getItem("jugadores")) || 4,
+    impostores: parseInt(localStorage.getItem("impostores")) || 1,
+    cartas: [],
+    cartaAbierta: null // <-- Solo una carta puede estar abierta
+  };
+
+  // --- Tema ---
+  temasCards.forEach(card => {
+    card.addEventListener("click", () => {
+      temasCards.forEach(c => c.classList.remove("seleccionado"));
+      card.classList.add("seleccionado");
+      temaSeleccionado = card.dataset.tema;
+      localStorage.setItem("tema", temaSeleccionado);
+    });
+  });
+
+  if (temaSeleccionado) {
+    const card = document.querySelector(`.tema-card[data-tema="${temaSeleccionado}"]`);
+    if (card) card.classList.add("seleccionado");
+  }
+
+  // --- Botones + / - ---
+  document.querySelectorAll(".btn-step").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      const action = btn.dataset.action;
+      let value = parseInt(input.value);
+      const min = parseInt(input.min) || 0;
+      const max = parseInt(input.max) || Infinity;
+
+      if (action === "increase" && value < max) value++;
+      if (action === "decrease" && value > min) value--;
+
+      input.value = value;
+      localStorage.setItem(input.id, value);
+    });
+  });
+
+  // --- Crear cartas ---
+  function crearCartas(jugadores, impostores, tema) {
+    const palabrasTema = palabras[tema];
+    const palabraComun = palabrasTema[Math.floor(Math.random() * palabrasTema.length)];
+    const cartas = [];
+
+    for (let i = 0; i < jugadores; i++) {
+      cartas.push({ palabra: palabraComun, impostor: false, vista: false });
+    }
+
+    for (let i = 0; i < impostores; i++) {
+      let idx;
+      do { idx = Math.floor(Math.random() * cartas.length); } while (cartas[idx].impostor);
+      cartas[idx].impostor = true;
+      cartas[idx].palabra = "IMPOSTOR";
+    }
+
+    return cartas;
+  }
+
+  // --- Mostrar cartas ---
+  function mostrarCartas() {
+    cartasContainer.innerHTML = "";
+    estado.cartas.forEach((carta, index) => {
+      const div = document.createElement("div");
+      div.classList.add("carta");
+      if (carta.vista) div.classList.add("bloqueada");
+
+      div.innerHTML = `
+        <div class="carta-inner">
+          <div class="carta-front">?</div>
+          <div class="carta-back ${carta.impostor ? "impostor" : ""}">${carta.palabra}</div>
+        </div>
+      `;
+
+      div.addEventListener("click", () => {
+        // Si hay otra carta abierta que no sea esta, no permitir voltear
+        if (estado.cartaAbierta !== null && estado.cartaAbierta !== index) return;
+
+        if (!div.classList.contains("bloqueada")) {
+          div.classList.toggle("volteada");
+
+          if (div.classList.contains("volteada")) {
+            estado.cartaAbierta = index;
+          } else {
+            estado.cartaAbierta = null;
+            estado.cartas[index].vista = true;
+            div.classList.add("bloqueada");
+
+            // Bloquear todas si ya se han visto todas
+            if (estado.cartas.every(c => c.vista)) {
+              document.querySelectorAll(".carta").forEach(el => el.classList.add("bloqueada"));
+            }
+          }
+        }
+      });
+
+      cartasContainer.appendChild(div);
+    });
+  }
+
+  // --- Iniciar ---
+  iniciarBtn.addEventListener("click", () => {
+    const jugadores = parseInt(jugadoresInput.value);
+    const impostores = parseInt(impostoresInput.value);
+
+    if (!temaSeleccionado) { alert("Selecciona un tema"); return; }
+    if (jugadores < 3) { alert("Mínimo 3 jugadores"); return; }
+    if (impostores < 1 || impostores > jugadores) { alert("Número de impostores inválido"); return; }
+
+    estado.jugadores = jugadores;
+    estado.impostores = impostores;
+    estado.tema = temaSeleccionado;
+    estado.cartas = crearCartas(jugadores, impostores, temaSeleccionado);
+    estado.cartaAbierta = null;
+
+    localStorage.setItem("jugadores", jugadores);
+    localStorage.setItem("impostores", impostores);
+    localStorage.setItem("tema", temaSeleccionado);
+
+    configuracion.classList.add("oculto");
+    juego.classList.remove("oculto");
+    temaActualH2.textContent = "Tema: " + temaSeleccionado.charAt(0).toUpperCase() + temaSeleccionado.slice(1);
+    mostrarCartas();
+  });
+
+  // --- Reiniciar ---
+  reiniciarBtn.addEventListener("click", () => {
+    estado.cartas = [];
+    estado.cartaAbierta = null;
+    configuracion.classList.remove("oculto");
+    juego.classList.add("oculto");
+    window.alert()
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+/* ---------------------- */
+/* --- ESTILOS GENERALES --- */
+* {
+    color: #2c2c2c;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;    
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #f7f7f7;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+main {
+    width: 100%;
+    max-width: 600px;
+}
+
+h1 {
+    color: #1E1E1E;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-bottom: 15px;
+}
+
+/* ---------------------- */
+/* --- SECCION CONFIGURACION --- */
+#configuracion, #juego {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.oculto {
+    display: none;
+}
+
+/* --- TARJETAS DE TEMAS --- */
+#temas-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 10px;
+}
+
+.tema-card {
+    background-color: #b9cbe2fd;
+    padding: 14px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.tema-card:hover {
+    transform: scale(1.03);
+}
+
+/* Color del tema seleccionado */
+.tema-card.seleccionado {
+    background-color: #86bbe7;
+    color: #005ea8;
+    border-color: #005ea8;
+    transform: scale(1.05);
+}
+
+/* ---------------------- */
+/* --- INPUTS CON BOTONES + / - --- */
+.input-group {
+    margin-top: 15px;
+}
+
+.input-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.input-step input {
+    width: 100%;
+    font-size: 1.1em;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background-color: #fafafa;
+    transition: all 0.2s;
+}
+
+.input-step input:focus {
+    border-color: #0078d7;
+    box-shadow: 0 0 5px rgba(0, 120, 215, 0.4);
+    background-color: #fff;
+}
+
+.btn-step {
+    background-color: #1E1E1E;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    width: 46px;
+    height: 36px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-step:hover {
+    background-color: #333;
+}
+
+.btn-step:active {
+    transform: scale(0.9);
+}
+
+/* ---------------------- */
+/* --- BOTON INICIAR / REINICIAR --- */
+button#iniciar, button#reiniciar {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px 0;
+    font-size: 1.1em;
+    font-weight: 600;
+    background-color: #0078d7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button#iniciar:hover, button#reiniciar:hover {
+    background-color: #005ea8;
+}
+
+/* ---------------------- */
+/* --- CARTAS --- */
+#cartas-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.carta {
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.carta-inner {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* ratio 1:1 */
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+}
+
+.carta.volteada .carta-inner {
+    transform: rotateY(180deg);
+}
+
+.carta-front, .carta-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.carta-front {
+    background-color: #67849b;
+    color: white;
+}
+
+.carta-back {
+    background-color:#c0ced7;
+    transform: rotateY(180deg);
+}
+
+/* Carta impostor */
+.carta-back.impostor {
+    background-color: #f8d7da;
+    color: #a71d2a;
+}
+
+/* Bloqueada */
+.carta.bloqueada {
+    cursor: default;
+    opacity: 0.4;
+}
